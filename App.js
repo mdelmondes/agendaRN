@@ -1,64 +1,38 @@
-import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import Medidas from './medidas/index';
-import TelaInicio from './telas/home/index';
-import Contato from './telas/contato/index';
+import React from 'react';
+import ContatoNavigator from './navegacao/ContatoNavigator';
+
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { Provider } from 'react-redux';
+import reduxThunk from 'redux-thunk';
+import contatosReducer from './store/contatos-reducer';
+
+import  { init } from './helpers/db';
+
+init()
+  .then(()=> {
+    console.log("Criação da base ocorreu com sucesso.");
+  }).catch((err) => {
+    console.log('Criação da base falhou.' + err);
+  });
+
+const rootReducer = combineReducers({
+
+  contatos: contatosReducer
+
+});
+
+const store = createStore(rootReducer, applyMiddleware(reduxThunk));
 
 export default function App() {
 
-  const [contatos, setContatos] = useState([]);
-  const [keyContato, setKeyContato] = useState('');
-  const [tela, setTela] = useState(1);
+  return (  
+    <Provider store={store}>
 
-  const [contador, setContador] = useState(10);
+      <ContatoNavigator />
 
-
-  const keySelecionado = (keyContato) => {
-
-    setKeyContato(keyContato);
-  };
-
-  const telaSelecionada = (contatos, contador) => {
-    setContatos(contatos)
-    setContador(contador)
-    if (tela === 1) {
-      setTela(2);
-    } else if (tela === 2) {
-      setTela(1);
-    }
-  };
-
-
-  let conteudo;
-
-  if (tela === 1) {
-    conteudo = <TelaInicio
-      keyContatoSelecionado={keySelecionado}
-      alteraTela={telaSelecionada}
-      contatosGeral={contatos}
-      cont={contador} />;
-  }
-  else if (tela === 2) {
-
-    conteudo = <Contato
-      editCont={keyContato}
-      editContatos={contatos}
-      voltar={telaSelecionada}
-      cont={contador} />
-  }
-
-  return (
-    <View style={styles.container} >
-
-      {conteudo}
-
-    </View>
-
+    </Provider>
+           
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: Medidas.twnty,
-  }
-});
+
